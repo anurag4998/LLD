@@ -1,7 +1,7 @@
 package com.parking;
 
 import com.parking.slots.SlotNotFoundException;
-import com.parking.ticket.TicketType;
+import com.parking.ticket.Ticket;
 
 public class ParkingLotDriver {
 
@@ -19,7 +19,7 @@ public class ParkingLotDriver {
 		parkingLot.addLevel();
 		parkingLot.addLevel();
 		
-		TicketType ticket = parkingLot.park(truck1);
+		Ticket ticket = parkingLot.park(truck1);
 		System.out.println(ticket.toString());
 		
 		double unpark = parkingLot.unpark(ticket, truck1 );

@@ -1,7 +1,7 @@
 package com.parking.pricing;
 
-import com.parking.VehicleType;
+import com.parking.ticket.Ticket;
 
 public interface PricingStrategy {
-	public double calculateCost(VehicleType vehicleType);
+	public double calculateCost(Ticket ticket);
 }

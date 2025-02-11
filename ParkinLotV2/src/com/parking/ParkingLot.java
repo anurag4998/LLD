@@ -8,6 +8,9 @@ import com.parking.pricing.FlatCharge;
 import com.parking.pricing.PricingStrategy;
 import com.parking.slots.AbstractSlot;
 import com.parking.slots.SlotNotFoundException;
+import com.parking.ticket.FlatTicketStategy;
+import com.parking.ticket.ITicketStrategy;
+import com.parking.ticket.Ticket;
 import com.parking.ticket.TicketType;
 import com.parking.ticket.TicketV1;
 
@@ -15,16 +18,16 @@ public class ParkingLot {
 	
 	private static int parkingLevelCount = 0;
 	private PricingStrategy pricingStrategy;
-	private List<TicketType> tickets;
-	private TicketType ticketType;
+	private List<Ticket> tickets;
+	private ITicketStrategy ticketingStrategy;
 	final List<ParkingLevel> parkingLevels = new ArrayList<ParkingLevel>();
     private static ParkingLot instance;
 
 	
-	public ParkingLot(PricingStrategy pricingStrategy, TicketType ticket) {
+	public ParkingLot(PricingStrategy pricingStrategy, ITicketStrategy ticketingStrategy) {
 		this.pricingStrategy = pricingStrategy;
-		this.ticketType = ticket;
-		tickets = new ArrayList<TicketType>();
+		this.ticketingStrategy = ticketingStrategy;
+		tickets = new ArrayList<Ticket>();
 	}
 	
 	public void addLevel() {
@@ -39,17 +42,15 @@ public class ParkingLot {
 			ParkingLevel parkingLevel = parkingLevelOpt.orElseThrow();
 			parkingLevel.addMultipleSlots(vehicleType, numberOfSlots);
 		}
-		catch(Exception e) {
-			
+		catch(Exception e) {	
 		}
-		
 	}
 	
 	public void setPricingStrategy(PricingStrategy pricingStrategy) {
 		this.pricingStrategy = pricingStrategy;
 	}
 	
-	public TicketType park(Vehicle vehicle) throws SlotNotFoundException {
+	public Ticket park(Vehicle vehicle) throws SlotNotFoundException {
 		//check if slot is free if not throw an exception
 		//markTheSlotAsOccupied
 		//generateTicket
@@ -57,13 +58,13 @@ public class ParkingLot {
 			Optional<AbstractSlot> firstAvailableSlot = getFirstAvailableSlot(vehicle.getVehicleType());
 			AbstractSlot slotFound = firstAvailableSlot.orElseThrow();
 			slotFound.markSlotAsOccupied(vehicle);
-			TicketType ticket = ticketType.generateTicket(vehicle.getVehicleType());
+			Ticket ticket = ticketingStrategy.generateTicket(vehicle.getVehicleType());
 			this.tickets.add(ticket);
 			return ticket;
 	}
 	
-	public double unpark(TicketType ticket, Vehicle vehicle) {	
-		double cost = pricingStrategy.calculateCost(ticket.getVehicleType());
+	public double unpark(Ticket ticket, Vehicle vehicle) {	
+		double cost = pricingStrategy.calculateCost(ticket);
 		unParkVehicle(vehicle);
 		return cost;
 	}
@@ -96,7 +97,7 @@ public class ParkingLot {
 	//Thread safe but has performance issues
 	public static synchronized ParkingLot getInstance() {
         if (instance == null) {
-	            instance = new ParkingLot(new FlatCharge(), new TicketV1());
+	            instance = new ParkingLot(new FlatCharge(), new FlatTicketStategy());
         }
         return instance;
     }
